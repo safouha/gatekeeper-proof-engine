@@ -6,6 +6,8 @@ Gatekeeper is a local-first release intelligence tool for AI-written code. Paste
 
 Built with **Codex + GPT-5.6** for **OpenAI Build Week 2026** in the Developer Tools category.
 
+**[Open the live demo](https://gatekeeper-proof-engine.safouha.chatgpt.site)** · **[Read the Devpost submission copy](DEVPOST.md)** · **[Watch the demo script](docs/DEMO_SCRIPT.md)**
+
 ![Gatekeeper social preview](public/og.png)
 
 ## Why Gatekeeper

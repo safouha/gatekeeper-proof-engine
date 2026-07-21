@@ -12,6 +12,11 @@ Fast code is easy. Proven code ships.
 
 Developer Tools
 
+## Links
+
+- Live demo: https://gatekeeper-proof-engine.safouha.chatgpt.site
+- Public repository: https://github.com/safouha/gatekeeper-proof-engine
+
 ## Inspiration
 
 Codex has changed the economics of writing code, but code review still scales with human attention. As AI-generated changes become larger and more frequent, teams need something more useful than another opaque “AI confidence score.” They need visible, reproducible evidence that a change deserves to ship.
