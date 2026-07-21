@@ -76,11 +76,13 @@ filters+="[x8][v9]xfade=transition=fade:duration=$transition:offset=$offset[x9];
 offset="127.0"
 filters+="[x9][v10]xfade=transition=fade:duration=$transition:offset=$offset,fade=t=out:st=141.8:d=1.2[vout]"
 
-"$FFMPEG" -hide_banner -loglevel warning -y \
-  "${inputs[@]}" \
-  -filter_complex "$filters" \
-  -map "[vout]" -r "$fps" -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -movflags +faststart \
-  "$SILENT_VIDEO"
+if [[ "${GATEKEEPER_REUSE_SILENT:-0}" != "1" || ! -f "$SILENT_VIDEO" ]]; then
+  "$FFMPEG" -hide_banner -loglevel warning -y \
+    "${inputs[@]}" \
+    -filter_complex "$filters" \
+    -map "[vout]" -r "$fps" -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -movflags +faststart \
+    "$SILENT_VIDEO"
+fi
 
 if [[ $# -eq 0 ]]; then
   echo "$SILENT_VIDEO"
@@ -93,7 +95,7 @@ if [[ ! -f "$audio" ]]; then
   exit 1
 fi
 
-audio_duration="$(afinfo "$audio" | awk -F': ' '/estimated duration/ {print $2; exit}')"
+audio_duration="$(afinfo "$audio" | awk '/estimated duration/ {print $(NF-1); exit}')"
 if [[ -z "$audio_duration" ]]; then
   echo "Could not determine narration duration." >&2
   exit 1
@@ -103,9 +105,9 @@ ratio="$(awk -v duration="$audio_duration" 'BEGIN {printf "%.8f", duration / 143
 
 "$FFMPEG" -hide_banner -loglevel warning -y \
   -i "$SILENT_VIDEO" -i "$audio" \
-  -filter_complex "[0:v]setpts=${ratio}*PTS,fade=t=out:st=$(awk -v d="$audio_duration" 'BEGIN {printf "%.3f", d-1.0}'):d=1[v];[1:a]highpass=f=75,lowpass=f=15000,loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:st=0:d=.25,afade=t=out:st=$(awk -v d="$audio_duration" 'BEGIN {printf "%.3f", d-0.75}'):d=.75[a]" \
+  -filter_complex "[0:v]setpts=${ratio}*PTS,fade=t=out:st=$(awk -v d="$audio_duration" 'BEGIN {printf "%.3f", d-1.0}'):d=1[v];[1:a]highpass=f=75,lowpass=f=15000,loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:st=0:d=0.25,afade=t=out:st=$(awk -v d="$audio_duration" 'BEGIN {printf "%.3f", d-0.75}'):d=0.75[a]" \
   -map "[v]" -map "[a]" -t "$audio_duration" \
-  -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart \
+  -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -ar 48000 -movflags +faststart \
   "$FINAL_VIDEO"
 
 echo "$FINAL_VIDEO"
